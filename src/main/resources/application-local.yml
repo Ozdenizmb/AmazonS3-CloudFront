@@ -1,0 +1,67 @@
+server:
+  port: 9001
+  shutdown: graceful
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/asset_service
+    username: postgres
+    password: 159753
+    pool:
+      max-create-connection-time: 2s
+      initial-size: 5
+      max-size: 10
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2MB
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+## Actuator ##
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+## Image File Path ##
+file:
+  allowed-formats: png, jpeg, jpg
+  default-height: 2000
+  default-width: 2000
+
+## AMAZON ##
+cloud:
+  aws:
+    credentials:
+      accessKey: ${awsAccessKey}
+      secretKey: ${awsSecretKey}
+    region:
+      static: ${awsRegion}
+    stack:
+      auto: false
+aws:
+  s3:
+    bucketName: ${awsS3BucketName}
+  cdn:
+    path: ${awsCdnPath}
+
+## OpenApi Settings ##
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    path: "/docs/swagger-ui.html"
+
+openapi:
+  app:
+    title: "Amazon S3 and CloudFront API"
+    description: "This project aims to manage asset"
+    version: 1.0
+    contact : "Contact Support"
+    email: "ozdenizm6@gmail.com"
+    licence: "Ozdeniz 1.0"
+    url: "https://baranozdeniz.com/"
