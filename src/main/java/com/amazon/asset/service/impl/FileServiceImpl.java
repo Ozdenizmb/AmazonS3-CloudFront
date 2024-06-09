@@ -1,10 +1,10 @@
 package com.amazon.asset.service.impl;
 
 import com.amazon.asset.exception.ErrorMessages;
-import com.amazon.asset.exception.ImageException;
-import com.amazon.asset.model.ImagesEntity;
-import com.amazon.asset.repository.ImageRepository;
-import com.amazon.asset.service.ImageService;
+import com.amazon.asset.exception.FileException;
+import com.amazon.asset.model.FileEntity;
+import com.amazon.asset.repository.FileRepository;
+import com.amazon.asset.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
@@ -28,16 +28,16 @@ import java.util.*;
 
 @RequiredArgsConstructor
 @Service
-public class ImageServiceImpl implements ImageService {
+public class FileServiceImpl implements FileService {
 
-    private final ImageRepository repository;
+    private final FileRepository repository;
     private final AmazonS3 amazonS3Client;
 
     @Value("${file.allowed-formats}")
     private String[] allowedFormats;
-    @Value("${file.default-height}")
+    @Value("${file.default-image-height}")
     private int defaultImageHeight;
-    @Value("${file.default-width}")
+    @Value("${file.default-image-width}")
     private int defaultImageWidth;
 
     @Value("${aws.s3.bucketName}")
@@ -46,51 +46,58 @@ public class ImageServiceImpl implements ImageService {
     private String cdnPath;
 
     @Override
-    public String uploadImage(MultipartFile file) {
+    public String uploadFile(MultipartFile file) {
         String randomName = UUID.randomUUID().toString().replace("-", "");
         String fileType = Objects.requireNonNull(file.getContentType()).split("/")[1];
 
         if(!Arrays.asList(allowedFormats).contains(fileType)) {
-            throw ImageException.withStatusAndMessage(HttpStatus.BAD_REQUEST, ErrorMessages.UNSUPPORTED_FILE_TYPE);
+            throw FileException.withStatusAndMessage(HttpStatus.BAD_REQUEST, ErrorMessages.UNSUPPORTED_FILE_TYPE);
         }
 
         String fileName = randomName + "." + fileType;
 
         try {
+            File tempFile;
 
-            BufferedImage originalImage = ImageIO.read(file.getInputStream());
-            BufferedImage resizedImage = new BufferedImage(defaultImageWidth, defaultImageHeight, originalImage.getType());
+            if(fileType.equals("png") || fileType.equals("jpeg") || fileType.equals("jpg")) {
+                BufferedImage originalImage = ImageIO.read(file.getInputStream());
+                BufferedImage resizedImage = new BufferedImage(defaultImageWidth, defaultImageHeight, originalImage.getType());
 
-            Graphics2D writer = resizedImage.createGraphics();
-            writer.drawImage(originalImage, 0, 0, defaultImageWidth, defaultImageHeight, null);
-            writer.dispose();
+                Graphics2D writer = resizedImage.createGraphics();
+                writer.drawImage(originalImage, 0, 0, defaultImageWidth, defaultImageHeight, null);
+                writer.dispose();
 
-            File tempFile = File.createTempFile(randomName, "." + fileType);
-            ImageIO.write(resizedImage, fileType, tempFile);
+                tempFile = File.createTempFile(randomName, "." + fileType);
+                ImageIO.write(resizedImage, fileType, tempFile);
+            }
+            else {
+                tempFile = File.createTempFile(randomName, "." + fileType);
+                file.transferTo(tempFile);
+            }
 
             amazonS3Client.putObject(new PutObjectRequest(bucketName, fileName, tempFile));
 
             tempFile.delete();
 
         } catch (IOException e) {
-            throw ImageException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.IMAGE_CANNOT_WRITE);
+            throw FileException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.FILE_CANNOT_WRITE);
         }
 
-        ImagesEntity image = ImagesEntity.builder()
+        FileEntity fileEntity = FileEntity.builder()
                 .name(fileName)
                 .type(file.getContentType())
-                .filePath("AMAZON S3")
+                .cdnPath(cdnPath)
                 .build();
 
-        repository.save(image);
+        repository.save(fileEntity);
 
         return fileName;
     }
 
     @Override
-    public byte[] getImage(String fileName) {
+    public byte[] getFile(String fileName) {
 
-        Optional<ImagesEntity> response = repository.findByName(fileName);
+        Optional<FileEntity> response = repository.findByName(fileName);
 
         if(response.isPresent()) {
 
@@ -103,35 +110,35 @@ public class ImageServiceImpl implements ImageService {
 
                 return IOUtils.toByteArray(inputStream);
             } catch (IOException | URISyntaxException e) {
-                throw ImageException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.IMAGES_NOT_FOUND);
+                throw FileException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.FILE_NOT_FOUND);
             }
 
         }
         else {
-            throw ImageException.withStatusAndMessage(HttpStatus.NOT_FOUND, ErrorMessages.IMAGES_NOT_FOUND);
+            throw FileException.withStatusAndMessage(HttpStatus.NOT_FOUND, ErrorMessages.FILE_NOT_FOUND);
         }
 
     }
 
     @Override
-    public Boolean deleteImage(String fileName) {
+    public Boolean deleteFile(String fileName) {
 
-        Optional<ImagesEntity> response = repository.findByName(fileName);
+        Optional<FileEntity> response = repository.findByName(fileName);
 
         if(response.isPresent()){
-            ImagesEntity existImage = response.get();
-            repository.delete(existImage);
+            FileEntity existFile = response.get();
+            repository.delete(existFile);
 
             try {
                 amazonS3Client.deleteObject(bucketName, fileName);
             } catch (Exception e) {
-                throw ImageException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.IMAGE_CANNOT_DELETE);
+                throw FileException.withStatusAndMessage(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessages.FILE_CANNOT_DELETE);
             }
 
             return true;
         }
         else {
-            throw ImageException.withStatusAndMessage(HttpStatus.NOT_FOUND, ErrorMessages.IMAGES_NOT_FOUND);
+            throw FileException.withStatusAndMessage(HttpStatus.NOT_FOUND, ErrorMessages.FILE_NOT_FOUND);
         }
 
     }

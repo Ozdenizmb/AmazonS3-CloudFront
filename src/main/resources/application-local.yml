@@ -28,11 +28,11 @@ management:
       exposure:
         include: health,info
 
-## Image File Path ##
+## FILE ##
 file:
-  allowed-formats: png, jpeg, jpg
-  default-height: 2000
-  default-width: 2000
+  allowed-formats: png, jpeg, jpg, mp3, mpeg, mp4, pdf, csv
+  default-image-height: 2000
+  default-image-width: 2000
 
 ## AMAZON ##
 cloud:

@@ -18,7 +18,7 @@ import java.util.Objects;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
-public class ImageExceptionHandler extends ResponseEntityExceptionHandler {
+public class FileExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String TIMESTAMP = "timestamp";
 
@@ -54,14 +54,14 @@ public class ImageExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(problemDetail, httpStatus);
     }
 
-    @ExceptionHandler(ImageException.class)
-    public ResponseEntity<Object> handleJobException(WebRequest webRequest, ImageException imageException) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(imageException.getStatus(), imageException.getMessage());
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<Object> handleJobException(WebRequest webRequest, FileException fileException) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(fileException.getStatus(), fileException.getMessage());
         problemDetail.setInstance(URI.create(webRequest.getDescription(false)));
-        problemDetail.setTitle(imageException.getClass().getSimpleName());
-        problemDetail.setStatus(imageException.getStatus().value());
+        problemDetail.setTitle(fileException.getClass().getSimpleName());
+        problemDetail.setStatus(fileException.getStatus().value());
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
-        return new ResponseEntity<>(problemDetail, imageException.getStatus());
+        return new ResponseEntity<>(problemDetail, fileException.getStatus());
     }
 
 }

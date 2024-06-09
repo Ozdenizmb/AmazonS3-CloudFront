@@ -15,9 +15,9 @@ import java.util.UUID;
 @Data
 @Builder
 @Entity
-@Table(name = "images_file_data", schema = "util_sch")
+@Table(name = "asset_data", schema = "util_sch")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ImagesEntity extends BaseEntity {
+public class FileEntity extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -29,7 +29,7 @@ public class ImagesEntity extends BaseEntity {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "file_path")
-    private String filePath;
+    @Column(name = "cdn_path")
+    private String cdnPath;
 
 }

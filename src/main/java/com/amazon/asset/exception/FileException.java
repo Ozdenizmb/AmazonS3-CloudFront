@@ -14,7 +14,7 @@ import static com.amazon.asset.exception.ErrorMessages.DEFAULT_ERROR_MESSAGE;
 
 @Getter
 @Setter
-public class ImageException extends RuntimeException implements Serializable {
+public class FileException extends RuntimeException implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String message;
@@ -23,36 +23,36 @@ public class ImageException extends RuntimeException implements Serializable {
     @NotNull
     private final HttpStatus status;
 
-    protected ImageException(HttpStatus status, Throwable throwable) {
+    protected FileException(HttpStatus status, Throwable throwable) {
         super(status.name(), throwable);
         this.status = status;
         this.message = throwable.getMessage();
         this.detail = !StringUtils.hasText(throwable.getMessage()) ? throwable.getMessage() : DEFAULT_ERROR_MESSAGE;
     }
 
-    protected ImageException(HttpStatus status, String message) {
+    protected FileException(HttpStatus status, String message) {
         super(status.name());
         this.status = status;
         this.message = message;
         this.detail = null;
     }
 
-    protected ImageException(HttpStatus status, String message, String errorDetail) {
+    protected FileException(HttpStatus status, String message, String errorDetail) {
         super(status.name());
         this.status = status;
         this.message = message;
         this.detail = errorDetail;
     }
 
-    public static ImageException withStatusAndThrowable(HttpStatus status, Throwable throwable){
-        return new ImageException(status, throwable);
+    public static FileException withStatusAndThrowable(HttpStatus status, Throwable throwable){
+        return new FileException(status, throwable);
     }
 
-    public static ImageException withStatusAndMessage(HttpStatus status, String message){
-        return new ImageException(status, message);
+    public static FileException withStatusAndMessage(HttpStatus status, String message){
+        return new FileException(status, message);
     }
 
-    public static ImageException withStatusAndDetails(HttpStatus status, String message, String errorDetail){
-        return new ImageException(status, message, errorDetail);
+    public static FileException withStatusAndDetails(HttpStatus status, String message, String errorDetail){
+        return new FileException(status, message, errorDetail);
     }
 }
