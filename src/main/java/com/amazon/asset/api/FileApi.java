@@ -45,7 +45,7 @@ public interface FileApi {
     @GetMapping(value = "/{fileName}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     ResponseEntity<byte[]> getFile(@PathVariable String fileName);
 
-    @Operation(operationId = "getCDNUrlForFile", summary = "Get CDN File For File.")
+    @Operation(operationId = "getCDNUrlForFile", summary = "Get CDN Url For File.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = Error.class))),
