@@ -24,6 +24,11 @@ public class FileController implements FileApi {
     }
 
     @Override
+    public ResponseEntity<String> getCDNUrlForFile(String fileName) {
+        return ResponseEntity.ok(service.getCDNUrlForFile(fileName));
+    }
+
+    @Override
     public ResponseEntity<Boolean> deleteFile(String fileName) {
         return ResponseEntity.ok(service.deleteFile(fileName));
     }

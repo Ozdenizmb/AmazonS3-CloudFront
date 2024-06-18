@@ -6,6 +6,7 @@ public interface FileService {
 
     String uploadFile(MultipartFile file);
     byte[] getFile(String fileName);
+    String getCDNUrlForFile(String fileName);
     Boolean deleteFile(String fileName);
 
 }

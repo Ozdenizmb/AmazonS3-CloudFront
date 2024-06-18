@@ -121,6 +121,20 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public String getCDNUrlForFile(String fileName) {
+
+        Optional<FileEntity> response = repository.findByName(fileName);
+
+        if(response.isPresent()) {
+            return response.get().getCdnPath() + fileName;
+        }
+        else {
+            throw FileException.withStatusAndMessage(HttpStatus.NOT_FOUND, ErrorMessages.FILE_NOT_FOUND);
+        }
+
+    }
+
+    @Override
     public Boolean deleteFile(String fileName) {
 
         Optional<FileEntity> response = repository.findByName(fileName);
